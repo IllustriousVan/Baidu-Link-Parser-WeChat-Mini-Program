@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>百度网盘微信小程序分享链接解析工具</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    .output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .output a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+    .output a:hover {
+      text-decoration: underline;
+    }
+    /* 模态窗口的样式 */
+    .modal {
+      display: none; /* 默认隐藏 */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      max-width: 500px;
+      margin: 100px auto;
+      text-align: left;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .modal-content h2 {
+      margin-top: 0;
+    }
+    .modal-content p {
+      margin: 0 0 10px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .close-btn:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>百度网盘微信小程序分享链接解析工具</h1>
+  <p>输入百度网盘微信小程序链接，自动提取百度网盘分享链接和提取码。</p>
+  <input type="text" id="inputUrl" placeholder="在此粘贴微信小程序链接">
+  <button onclick="decodeURL()">解析链接</button>
+  <button onclick="showModal()">查看使用方式</button>
+
+  <div id="output" class="output" style="display: none;">
+    <h3>解析结果：</h3>
+    <p><strong>百度网盘链接：</strong> <a href="" id="baiduLink" target="_blank"></a></p>
+    <p><strong>提取码：</strong> <span id="pwd"></span></p>
+  </div>
+
+  <!-- 模态窗口 -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h2>使用方式</h2>
+      <ol>
+        <li>扫码，打开别人分享的百度网盘微信小程序。</li>
+        <li>点击小程序右上角三个点，点击“反馈与投诉”。</li>
+        <li>在“反馈与投诉”页面，复制网页链接到本工具进行解析即可。</li>
+      </ol>
+      <p>本工具参考博客：<a href="https://blog.imwcr.cn/2023/11/29/weixin-miniapp-baidu-netdisk/" target="_blank">https://blog.imwcr.cn/2023/11/29/weixin-miniapp-baidu-netdisk/</a></p>
+      <p>本工具作者：</p>
+      <ul>
+        <li>GitHub: <a href="https://github.com/IllustriousVan" target="_blank">@IllustriousVan</a></li>
+        <li>CSDN: <a href="https://blog.csdn.net/Beihai_Van" target="_blank">https://blog.csdn.net/Beihai_Van</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // 解析URL函数
+    function decodeURL() {
+      const inputUrl = document.getElementById('inputUrl').value;
+      if (!inputUrl) {
+        alert('请先输入微信小程序链接！');
+        return;
+      }
+
+      try {
+        const decodedUrl = decodeURIComponent(decodeURIComponent(decodeURIComponent(inputUrl)));
+        const url = new URL(decodedUrl);
+        const pageid = url.searchParams.get('pageid');
+        const hash = url.hash;
+
+        if (!pageid || !hash) {
+          alert('未能找到有效的 pageid 或提取码信息，请检查链接格式！');
+          return;
+        }
+
+        const sceneMatch = pageid.match(/scene=([^#]+)/);
+        if (!sceneMatch) {
+          alert('未能找到 scene 参数，请检查链接是否正确！');
+          return;
+        }
+
+        const sceneParts = sceneMatch[1].split('#');
+        const surl = sceneParts[0];
+        const hashParts = hash.split('#');
+        const pwd = hashParts[1];
+
+        const baiduLink = `https://pan.baidu.com/s/${surl}?pwd=${pwd}`;
+        document.getElementById('output').style.display = 'block';
+        document.getElementById('baiduLink').href = baiduLink;
+        document.getElementById('baiduLink').textContent = baiduLink;
+        document.getElementById('pwd').textContent = pwd;
+
+      } catch (error) {
+        alert('解析失败！请检查输入的链接是否正确。');
+        console.error(error);
+      }
+    }
+
+    // 显示模态窗口
+    function showModal() {
+      document.getElementById('modal').style.display = 'block';
+    }
+
+    // 关闭模态窗口
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
